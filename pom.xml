@@ -43,6 +43,12 @@
             <version>4.0.4</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
+        </dependency>
     </dependencies>
 
     <!-- Секция сборки -->
@@ -71,7 +77,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.example.app.Program</mainClass>
+                            <mainClass>com.example.common.app.Program</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
