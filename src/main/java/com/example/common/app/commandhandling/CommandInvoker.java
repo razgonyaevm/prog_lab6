@@ -1,5 +1,6 @@
 package com.example.common.app.commandhandling;
 
+import com.example.common.network.Response;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,16 +12,17 @@ public class CommandInvoker {
     commands.put(commandName, command);
   }
 
-  public void execute(String commandName) {
+  public Response execute(String commandName) {
     Command command = commands.get(commandName);
     if (command != null) {
-      command.execute();
+      return command.execute();
     } else {
-      System.out.println("Ошибка в команде. Для вывода справки, воспользуйтесь командой help");
+      return new Response(
+          "Ошибка в команде. Для вывода справки, воспользуйтесь командой help", false);
     }
   }
 
-  public void execute(Command command) {
-    command.execute();
+  public Response execute(Command command) {
+    return command.execute();
   }
 }
