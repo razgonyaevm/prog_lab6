@@ -1,6 +1,7 @@
 package com.example.common.app.commandhandling.commands;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 
 /** Подсчет количества фильмов, у которых имя оператора равно заданному */
@@ -14,11 +15,10 @@ public class CountByOperator implements Command {
   }
 
   @Override
-  public void execute() {
+  public Response execute() {
     if (operatorName == null || operatorName.isBlank()) {
-      System.out.println("Ошибка: укажите имя оператора");
-      return;
+      return new Response("Ошибка: укажите имя оператора", false);
     }
-    collection.countByOperator(operatorName);
+    return collection.countByOperator(operatorName);
   }
 }

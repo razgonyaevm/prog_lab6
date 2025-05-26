@@ -1,6 +1,7 @@
 package com.example.common.app.commandhandling.commands;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 
 /** Изменяет порядок фильмов на обратный */
@@ -12,8 +13,7 @@ public class ReorderCommand implements Command {
   }
 
   @Override
-  public void execute() {
-    collection.reorder();
-    System.out.println("Порядок фильмов успешно изменен");
+  public Response execute() {
+    return collection.reorder();
   }
 }

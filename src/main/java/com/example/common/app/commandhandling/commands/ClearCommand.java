@@ -1,6 +1,7 @@
 package com.example.common.app.commandhandling.commands;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 
 /** Очищает коллекцию */
@@ -12,8 +13,8 @@ public class ClearCommand implements Command {
   }
 
   @Override
-  public void execute() {
+  public Response execute() {
     collection.clear();
-    System.out.println("Коллекция очищена");
+    return new Response("Коллекция очищена", true);
   }
 }

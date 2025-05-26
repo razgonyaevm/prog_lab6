@@ -1,6 +1,7 @@
 package com.example.common.app.commandhandling.commands;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 
 /** Выводит все элементы коллекции в строковом представлении */
@@ -12,7 +13,7 @@ public class ShowCommand implements Command {
   }
 
   @Override
-  public void execute() {
-    collection.show();
+  public Response execute() {
+    return collection.show();
   }
 }

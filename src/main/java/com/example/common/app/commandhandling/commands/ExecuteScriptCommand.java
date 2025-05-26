@@ -1,9 +1,10 @@
 package com.example.common.app.commandhandling.commands;
 
-import static com.example.common.app.commandhandling.CommandHandler.handleCommand;
+import static com.example.common.app.commandhandling.CommandProcessor.processCommand;
 
 import com.example.common.app.commandhandling.Command;
 import com.example.common.app.commandhandling.CommandInvoker;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -29,30 +30,37 @@ public class ExecuteScriptCommand implements Command {
   }
 
   @Override
-  public void execute() {
-    Path script_path = Paths.get(fileName).toAbsolutePath().normalize();
-    String normalizedFileName = script_path.toString();
+  public Response execute() {
+    Path scriptPath = Paths.get(fileName).toAbsolutePath().normalize();
+    String normalizedFileName = scriptPath.toString();
     if (executingScripts.contains(normalizedFileName)) {
-      System.out.println("Обнаружен рекурсивный вызов скрипта " + normalizedFileName);
-      System.out.println("Текущая цепочка вызовов: " + executingScripts);
-      return;
+      return new Response(
+          "Обнаружен рекурсивный вызов скрипта "
+              + normalizedFileName
+              + '\n'
+              + "Текущая цепочка вызовов: "
+              + executingScripts,
+          false);
     }
 
     executingScripts.add(normalizedFileName);
 
     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
       Scanner fileScanner = new Scanner(br);
+      StringBuilder responses = new StringBuilder();
       while (fileScanner.hasNextLine()) {
         String command = fileScanner.nextLine().trim();
         if (!command.isEmpty()) {
-          handleCommand(command, collection, fileScanner, invoker, true);
+          responses.append(
+              processCommand(command, collection, fileScanner, invoker, true).getMessage());
+          responses.append("\n");
         }
       }
-      System.out.println("Выполнение скрипта " + fileName + " завершено");
+      return new Response(responses + "Выполнение скрипта " + fileName + " завершено", true);
     } catch (FileNotFoundException e) {
-      System.out.println("Файл не найден");
+      return new Response("Файл не найден", false);
     } catch (Exception e) {
-      System.out.println("Ошибка выполнения скрипта: " + e.getMessage());
+      return new Response("Ошибка выполнения скрипта: " + e.getMessage(), false);
     } finally {
       executingScripts.pop();
     }

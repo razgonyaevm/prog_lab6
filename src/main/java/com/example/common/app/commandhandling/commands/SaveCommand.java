@@ -1,6 +1,7 @@
 package com.example.common.app.commandhandling.commands;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.service.MovieCollection;
 
 /** Команда сохранения коллекции в файл */
@@ -14,8 +15,7 @@ public class SaveCommand implements Command {
   }
 
   @Override
-  public void execute() {
-    collection.save(filePath);
-    System.out.println("Коллекция успешно сохранена");
+  public Response execute() {
+    return collection.save(filePath);
   }
 }
