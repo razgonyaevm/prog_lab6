@@ -1,47 +1,55 @@
 package com.example.common.service;
 
+import com.example.common.network.Response;
 import com.example.common.service.model.Movie;
 import com.example.common.xml.XMLHandler;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.Getter;
 
 /** Класс для управления коллекцией с элементами {@link Movie} */
 @Getter
 public class MovieCollection {
-  private final List<Movie> movies = new LinkedList<>();
+  private final LinkedList<Movie> movies = new LinkedList<>();
   private final LocalDateTime initializationDate = LocalDateTime.now();
 
   /** Добавляет элемент в коллекцию */
-  public void add(Movie movie) {
+  public Response add(Movie movie) {
     movies.add(movie);
+    return new Response("Фильм успешно добавлен", true);
   }
 
   /** Устанавливает новый элемент на место с индексом id */
-  public void update(long id, Movie newMovie) {
+  public Response update(long id, Movie newMovie) {
     newMovie.updateId(id);
 
     ListIterator<Movie> iterator = movies.listIterator();
     while (iterator.hasNext()) {
       if (iterator.next().getId().equals(id)) {
         iterator.set(newMovie);
-        return;
+        return new Response("Фильм успешно обновлен", true);
       }
     }
+    return new Response("Фильм с таким id не найден", false);
   }
 
   /** Удаляет элемент по значению его id */
-  public void removeById(long id) {
-    movies.removeIf(movie -> movie.getId().equals(id));
+  public Response removeById(long id) {
+    boolean removed = movies.removeIf(movie -> movie.getId().equals(id));
+    return removed
+        ? new Response("Фильм с id " + id + " успешно удален", true)
+        : new Response("Фильм с таким id не найден", false);
   }
 
   /** Очищает коллекцию */
-  public void clear() {
+  public Response clear() {
     movies.clear();
+    return new Response("Коллекция очищена", true);
   }
 
   /** Выводит все элементы коллекции в строковом представлении */
-  public void show() {
+  public Response show() {
     int index = 1; // Нумерация начинается с 1
     StringBuilder result = new StringBuilder();
     for (Movie movie : movies) {
@@ -49,73 +57,80 @@ public class MovieCollection {
       index++;
     }
     if (movies.isEmpty()) {
-      System.out.println("В коллекции нет элементов");
+      return new Response("В коллекции нет элементов", true);
     } else {
-      System.out.println(result);
+      return new Response(result.toString(), true);
     }
   }
 
   /** Меняет порядок элементов коллекции на противоположный */
-  public void reorder() {
+  public Response reorder() {
     Collections.reverse(movies);
+    return new Response("Элементы коллекции переставлены в обратном порядке", true);
   }
 
   /** Удаляет элемент коллекции по индексу */
-  public void removeAt(int index) {
+  public Response removeAt(int index) {
     if (index >= 0 && index < movies.size()) {
       movies.remove(index);
+      return new Response("Элемент удален", true);
     } else {
-      System.out.println("Ошибка: неверный индекс");
+      return new Response("Ошибка: неверный индекс или элемент не найден", false);
     }
   }
 
   /** Удаляет первый элемент коллекции */
-  public void removeFirst() {
+  public Response removeFirst() {
     if (!movies.isEmpty()) {
-      ((LinkedList<Movie>) movies).removeFirst();
+      movies.removeFirst();
+      return new Response("Первый элемент коллекции удален", true);
     } else {
-      System.out.println("В коллекции нет элементов");
+      return new Response("В коллекции нет элементов", false);
     }
   }
 
   /** Выводит сумму значений поля length для всех элементов коллекции */
-  public void sumOfLength() {
+  public Response sumOfLength() {
     int sum = movies.stream().mapToInt(Movie::getLength).sum();
-    System.out.println("Сумма length: " + sum);
+    return new Response("Сумма length: " + sum, true);
   }
 
   /** Выводит количество элементов, у которых имя оператора равно заданному */
-  public void countByOperator(String operatorName) {
+  public Response countByOperator(String operatorName) {
     long count =
         movies.stream()
             .filter(m -> Objects.equals(m.getOperator().getName(), operatorName))
             .count();
-    System.out.println("Количество фильмов оператора " + operatorName + ": " + count);
+    return new Response("Количество фильмов оператора " + operatorName + ": " + count, true);
   }
 
   /** Выводит количество оскаров у всех фильмов в порядке убывания */
-  public void printDescendingOscarsCount() {
-    movies.stream()
-        .map(Movie::getOscarsCount)
-        .sorted(Comparator.reverseOrder())
-        .forEach(System.out::println);
+  public Response printDescendingOscarsCount() {
+    String result =
+        movies.stream()
+            .map(Movie::getOscarsCount)
+            .sorted(Comparator.reverseOrder())
+            .map(String::valueOf)
+            .collect(Collectors.joining(", "));
+    return new Response(result.isEmpty() ? "Коллекция пуста" : result, true);
   }
 
   /** Устанавливает новую коллекцию */
-  public void setMovies(LinkedList<Movie> movies) {
+  public Response setMovies(LinkedList<Movie> movies) {
     this.movies.clear();
     this.movies.addAll(movies);
+    return new Response("Новая коллекция установлена", true);
   }
 
   /** Возвращает размер коллекции */
-  public int size() {
-    return movies.size();
+  public Response size() {
+    return new Response(String.valueOf(movies.size()), true);
   }
 
   /** Сохраняет коллекцию в файл */
-  public void save(String filePath) {
+  public Response save(String filePath) {
     XMLHandler xmlHandler = new XMLHandler(filePath);
-    xmlHandler.save((LinkedList<Movie>) movies);
+    return xmlHandler.save((LinkedList<Movie>) movies);
   }
 
   /** Возвращает элемент коллекции по индексу */

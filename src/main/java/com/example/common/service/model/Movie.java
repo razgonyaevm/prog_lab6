@@ -8,7 +8,6 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlTransient;
-
 import java.io.Serializable;
 import java.time.LocalDate;
 import lombok.EqualsAndHashCode;

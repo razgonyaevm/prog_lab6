@@ -7,9 +7,8 @@ import com.example.common.validate.HeightValidator;
 import com.example.common.validate.NameValidator;
 import com.example.common.validate.Validator;
 import com.example.common.validate.WeightValidator;
-import lombok.*;
-
 import java.io.Serializable;
+import lombok.*;
 
 /** Класс, описывающий человека */
 @Getter

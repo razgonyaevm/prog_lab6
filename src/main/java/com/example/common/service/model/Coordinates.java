@@ -3,12 +3,11 @@ package com.example.common.service.model;
 import com.example.common.validate.Validator;
 import com.example.common.validate.XValidator;
 import com.example.common.validate.YValidator;
+import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-import java.io.Serializable;
 
 /** Класс координат (знать бы еще, что это) */
 @ToString
