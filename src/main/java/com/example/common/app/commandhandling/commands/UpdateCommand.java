@@ -3,50 +3,62 @@ package com.example.common.app.commandhandling.commands;
 import static com.example.common.parsing.ParserClass.parseLong;
 
 import com.example.common.app.commandhandling.Command;
+import com.example.common.network.Response;
 import com.example.common.parsing.ScanMovie;
 import com.example.common.service.MovieCollection;
 import com.example.common.service.model.Movie;
+import java.io.Serializable;
 import java.util.Scanner;
+import lombok.Getter;
 
 /** Обновление элемента в коллекции по его id */
-public class UpdateCommand implements Command {
+public class UpdateCommand implements Command, Serializable {
   private final MovieCollection collection;
+  @Getter private Movie movie;
+  @Getter private final String command;
+  private final boolean executeScript;
   private final Scanner scanner;
-  private final String command;
-  private final Boolean execute_script;
+
+  public UpdateCommand(MovieCollection collection, Movie movie, String command) {
+    this.collection = collection;
+    this.movie = movie;
+    this.command = command;
+    this.scanner = null;
+    this.executeScript = false;
+  }
 
   public UpdateCommand(
-      MovieCollection collection, Scanner scanner, String command, Boolean execute_script) {
+      MovieCollection collection, Scanner scanner, String command, Boolean executeScript) {
     this.collection = collection;
     this.scanner = scanner;
+    this.executeScript = executeScript;
     this.command = command;
-    this.execute_script = execute_script;
+    this.movie = null;
   }
 
   @Override
-  public void execute() {
+  public Response execute() {
     String[] parts = command.trim().split("\\s+");
     if (parts.length != 2) {
-      System.out.println("Ошибка: укажите id");
-      return;
+      return new Response("Ошибка: укажите id", false);
     }
     try {
       long id = parseLong(parts[1]);
       if (id <= 0) {
-        System.out.println("ID must be greater than 0");
-        return;
+        return new Response("ID must be greater than 0", false);
       }
-      for (int i = 0; i < collection.size(); i++) {
+      for (int i = 0; i < Integer.parseInt(collection.size().getMessage()); i++) {
         if (collection.get(i).getId().equals(id)) {
-          Movie movieUpdate = new ScanMovie(scanner, execute_script).getMovie();
-          collection.update(id, movieUpdate);
-          System.out.println("Фильм успешно обновлен");
-          return;
+          if (executeScript) {
+            movie = new ScanMovie(scanner, true).getMovie();
+          }
+          collection.update(id, movie);
         }
+        return new Response("Фильм успешно обновлен", true);
       }
-      System.out.println("Фильм с таким ID не найден.");
+      return new Response("Фильм с таким ID не найден.", false);
     } catch (IllegalArgumentException e) {
-      System.out.println(e.getMessage());
+      return new Response("Ошибка при обновлении фильма: " + e.getMessage(), false);
     }
   }
 }
