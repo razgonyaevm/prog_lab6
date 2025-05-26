@@ -13,19 +13,19 @@ import lombok.Getter;
 public class ScanOperator {
   private final Scanner scanner;
   @Getter private final Person operator;
-  private final Boolean execute_script;
+  private final Boolean executeScript;
 
-  public ScanOperator(Scanner scanner, Boolean execute_script) {
+  public ScanOperator(Scanner scanner, Boolean executeScript) {
     this.scanner = scanner;
     operator = new Person();
-    this.execute_script = execute_script;
+    this.executeScript = executeScript;
     setOperator();
   }
 
   public void setOperator() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите имя оператора: ");
         }
         operator.setName(scanner.nextLine());
@@ -37,7 +37,7 @@ public class ScanOperator {
 
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите рост оператора: ");
         }
         String height = scanner.nextLine();
@@ -54,7 +54,7 @@ public class ScanOperator {
 
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите вес оператора: ");
         }
         String weight = scanner.nextLine();
@@ -71,7 +71,7 @@ public class ScanOperator {
 
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.println(
               "Введите любимый цвет оператора: (возможные значения: "
                   + Arrays.toString(Color.values())
@@ -91,7 +91,7 @@ public class ScanOperator {
 
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.println(
               "Введите национальность оператора (возможные значения: "
                   + Arrays.toString(Country.values())

@@ -15,13 +15,13 @@ public class ScanMovie {
   @Getter private final Movie movie;
   private final Coordinates coordinates;
   private final Scanner scanner;
-  private final Boolean execute_script;
+  private final Boolean executeScript;
 
-  public ScanMovie(Scanner scanner, Boolean execute_script) {
+  public ScanMovie(Scanner scanner, Boolean executeScript) {
     this.scanner = scanner;
     movie = new Movie();
     coordinates = new Coordinates();
-    this.execute_script = execute_script;
+    this.executeScript = executeScript;
 
     setName();
     setCoordinates();
@@ -29,7 +29,7 @@ public class ScanMovie {
     setLength();
     setGenre();
     setMpaaRating();
-    ScanOperator operator = new ScanOperator(scanner, execute_script);
+    ScanOperator operator = new ScanOperator(scanner, executeScript);
     movie.setOperator(operator.getOperator());
   }
 
@@ -37,7 +37,7 @@ public class ScanMovie {
   public void setName() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите название фильма: ");
         }
         movie.setName(scanner.nextLine());
@@ -52,7 +52,7 @@ public class ScanMovie {
   public void setCoordinates() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите первую координату: ");
         }
         String x = scanner.nextLine();
@@ -69,7 +69,7 @@ public class ScanMovie {
 
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите вторую координату: ");
         }
         String y = scanner.nextLine();
@@ -91,7 +91,7 @@ public class ScanMovie {
   public void setOscarsCount() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите количество оскаров: ");
         }
         String count = scanner.nextLine();
@@ -111,7 +111,7 @@ public class ScanMovie {
   public void setLength() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print("Введите длительность фильма: ");
         }
         String length = scanner.nextLine();
@@ -131,7 +131,7 @@ public class ScanMovie {
   public void setGenre() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print(
               "Введите жанр фильма (возможные значения: "
                   + Arrays.toString(MovieGenre.values())
@@ -154,7 +154,7 @@ public class ScanMovie {
   public void setMpaaRating() {
     while (true) {
       try {
-        if (!execute_script) {
+        if (!executeScript) {
           System.out.print(
               "Введите рейтинг фильма (возможные значения: "
                   + Arrays.toString(MpaaRating.values())
