@@ -12,7 +12,7 @@ import lombok.Getter;
 /** Класс для управления коллекцией с элементами {@link Movie} */
 @Getter
 public class MovieCollection implements Serializable {
-  private final LinkedList<Movie> movies = new LinkedList<>();
+  private final List<Movie> movies = new LinkedList<>();
   private final LocalDateTime initializationDate = LocalDateTime.now();
 
   /** Добавляет элемент в коллекцию */
@@ -131,7 +131,7 @@ public class MovieCollection implements Serializable {
   /** Сохраняет коллекцию в файл */
   public Response save(String filePath) {
     XMLHandler xmlHandler = new XMLHandler(filePath);
-    return xmlHandler.save(movies);
+    return xmlHandler.save((LinkedList<Movie>) movies);
   }
 
   /** Возвращает элемент коллекции по индексу */
