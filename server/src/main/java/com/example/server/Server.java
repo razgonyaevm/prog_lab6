@@ -63,7 +63,7 @@ public class Server {
                     new UpdateCommand(
                         collection, updateCommand.getMovie(), updateCommand.getCommand()));
           } else {
-            response = processCommand(command.toString(), collection, null, invoker, false);
+            response = processCommand(command.toString(), collection, invoker, false);
           }
           responseSender.sendResponse(
               connectionHandler.getChannel(), result.clientAddress(), response);
@@ -86,7 +86,8 @@ public class Server {
 
   public static void main(String[] args) {
     try {
-      Server server = new Server("resources/collection.xml", Integer.parseInt(System.getenv("PORT")));
+      Server server =
+          new Server("resources/collection.xml", Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);

@@ -10,7 +10,7 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Scanner;
+import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,56 +35,141 @@ public class Client {
         String input = scanner.nextLine();
         if (input.trim().equals("exit")) break;
 
-        Command command;
-        switch (input.trim().split("\\s+")[0]) {
-          case "add" ->
-              command =
-                  new AddCommand(new MovieCollection(), new ScanMovie(scanner, false).getMovie());
-          case "update" ->
-              command =
-                  new UpdateCommand(
-                      new MovieCollection(), new ScanMovie(scanner, false).getMovie(), input);
-          default -> command = new GenericCommand(input);
-        }
-
-        int attempts = 0;
-        boolean success = false;
-        while (attempts < MAX_RETRIES && !success) {
-          try {
-            // Серилизируем программу
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(command);
-            byte[] data = bos.toByteArray();
-
-            // Отправляем датаграмму
-            DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
-            socket.send(packet);
-
-            // Получаем ответ
-            byte[] buffer = new byte[BUFFER_SIZE];
-            DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
-            socket.receive(responsePacket);
-
-            // Десерилизируем ответ
-            ByteArrayInputStream bis =
-                new ByteArrayInputStream(buffer, 0, responsePacket.getLength());
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            Response response = (Response) ois.readObject();
-            System.out.println("Ответ сервера: " + response.getMessage());
-            success = true;
-          } catch (IOException e) {
-            attempts++;
-            logger.warn("Попытка {} не удалась: {}", attempts, e.getMessage());
-            if (attempts == MAX_RETRIES) {
-              System.out.println("Сервер недоступен после " + MAX_RETRIES + " попыток");
-            }
-            Thread.sleep(SLEEP_MS);
-          }
+        // Обрабатываем ввод пользователя
+        List<Command> commands = processInput(input, scanner);
+        for (Command command : commands) {
+          sendCommand(socket, address, port, command);
         }
       }
     } catch (Exception e) {
-      logger.error("Ошибка работы клиента", e);
+      logger.error("Ошибка работы клиента: {}", e.getMessage(), e);
+    }
+  }
+
+  private static List<Command> processInput(String input, Scanner scanner) {
+    List<Command> commands = new ArrayList<>();
+    String[] parts = input.trim().split("\\s+");
+    String commandName = parts[0].toLowerCase();
+
+    if (commandName.equals("execute_script") && parts.length == 2) {
+      String filePath = parts[1];
+      commands.addAll(executeScript(filePath, scanner));
+    } else {
+      commands.add(createCommand(input, scanner, false));
+    }
+    return commands;
+  }
+
+  private static List<Command> executeScript(String filePath, Scanner scanner) {
+    List<Command> commands = new ArrayList<>();
+    Stack<String> scriptStack = new Stack<>();
+    Set<String> visitedFiles = new HashSet<>();
+    scriptStack.push(filePath);
+
+    while (!scriptStack.isEmpty()) {
+      String currentFile = scriptStack.pop();
+      if (!visitedFiles.add(currentFile)) {
+        logger.warn("Обнаружена рекурсия: файл {} уже вызывался", currentFile);
+        System.out.println("Ошибка: рекурсивный вызов скрипта " + currentFile);
+        return new ArrayList<>();
+      }
+      File file = new File(currentFile);
+
+      if (!file.exists()) {
+        logger.warn("Файл скрипта {} не найден", currentFile);
+        System.out.println("Ошибка: файл " + currentFile + " не найден");
+        return new ArrayList<>();
+      }
+
+      try (Scanner fileScanner = new Scanner(file)) {
+        while (fileScanner.hasNextLine()) {
+          String line = fileScanner.nextLine().trim();
+          if (line.isEmpty()) continue;
+
+          String[] parts = line.split("\\s+");
+          String commandName = parts[0].toLowerCase();
+
+          if (commandName.equals("execute_script") && parts.length == 2) {
+            String nestedFilePath = parts[1];
+            scriptStack.push(nestedFilePath);
+          } else {
+            try {
+              commands.add(createCommand(line, fileScanner, true));
+            } catch (IllegalArgumentException e) {
+              logger.warn("Ошибка в команде: '{}': {}", line, e.getMessage());
+              System.out.println("Ошибка в скрипте: " + e.getMessage());
+            }
+          }
+        }
+      } catch (FileNotFoundException e) {
+        logger.error("Ошибка в чтения файла {}: {}", currentFile, e.getMessage());
+        System.out.println("Ошибка чтения файла " + currentFile);
+        return new ArrayList<>();
+      }
+    }
+    return commands;
+  }
+
+  private static Command createCommand(String input, Scanner scanner, boolean fromScript) {
+    String[] parts = input.trim().split("\\s+");
+    String commandName = parts[0].toLowerCase();
+
+    return switch (commandName) {
+      case "add" ->
+          new AddCommand(new MovieCollection(), new ScanMovie(scanner, fromScript).getMovie());
+      case "update" ->
+          new UpdateCommand(
+              new MovieCollection(), new ScanMovie(scanner, fromScript).getMovie(), input);
+      default -> new GenericCommand(input);
+    };
+  }
+
+  private static void sendCommand(
+      DatagramSocket socket, InetAddress address, int port, Command command) {
+    int attempts = 0;
+    boolean success = false;
+
+    while (attempts < MAX_RETRIES && !success) {
+      try {
+        // Серилизируем программу
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(command);
+        byte[] data = bos.toByteArray();
+
+        // Отправляем датаграмму
+        DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
+        socket.send(packet);
+        logger.debug("Отправлена команда: {}", command);
+
+        // Получаем ответ
+        byte[] buffer = new byte[BUFFER_SIZE];
+        DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
+        socket.receive(responsePacket);
+
+        // Десерилизируем ответ
+        ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, responsePacket.getLength());
+        ObjectInputStream ois = new ObjectInputStream(bis);
+        Response response = (Response) ois.readObject();
+        System.out.println("Ответ сервера: " + response.getMessage());
+
+        success = true;
+      } catch (IOException e) {
+        attempts++;
+        logger.warn("Попытка {} не удалась: {}", attempts, e.getMessage());
+        if (attempts == MAX_RETRIES) {
+          System.out.println("Сервер недоступен после " + MAX_RETRIES + " попыток");
+        }
+        try {
+          Thread.sleep(SLEEP_MS);
+        } catch (InterruptedException ie) {
+          logger.error("Ошибка при ожидании: {}", ie.getMessage());
+        }
+      } catch (ClassNotFoundException e) {
+        logger.error("Ошибка десериализации ответа: {}", e.getMessage());
+        System.out.println("Ошибка десериализации ответа сервера");
+        break;
+      }
     }
   }
 }

@@ -4,14 +4,13 @@ import com.example.app.commands.*;
 import com.example.network.Response;
 import com.example.service.MovieCollection;
 import java.util.Scanner;
+import lombok.Setter;
 
 public class CommandProcessor {
+  @Setter private static Scanner scanner;
+
   public static Response processCommand(
-      String command,
-      MovieCollection collection,
-      Scanner scanner,
-      CommandInvoker invoker,
-      Boolean executeScript) {
+      String command, MovieCollection collection, CommandInvoker invoker, Boolean executeScript) {
     String[] parts = command.trim().split("\\s+");
     try {
       switch (parts[0].toLowerCase()) {
@@ -27,13 +26,6 @@ public class CommandProcessor {
             return invoker.execute(new AddExecutionCommand(collection, scanner));
           }
           return new Response("Команда 'add' должна содержать данные фильма", false);
-        }
-        case "execute_script" -> {
-          if (parts.length == 2) {
-            return invoker.execute(new ExecuteScriptCommand(collection, parts[1], invoker));
-          } else {
-            return new Response("Ошибка: укажите имя файла", false);
-          }
         }
         case "count_by_operator" -> {
           return invoker.execute(
