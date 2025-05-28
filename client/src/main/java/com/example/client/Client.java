@@ -18,6 +18,8 @@ public class Client {
   private static final Logger logger = LogManager.getLogger(Client.class);
   private static final int TIMEOUT_MS = 5000;
   private static final int MAX_RETRIES = 3;
+  private static final int SLEEP_MS = 1000;
+  private static final int BUFFER_SIZE = 65535;
 
   public static void main(String[] args) {
     try (DatagramSocket socket = new DatagramSocket()) {
@@ -60,7 +62,7 @@ public class Client {
             socket.send(packet);
 
             // Получаем ответ
-            byte[] buffer = new byte[65535];
+            byte[] buffer = new byte[BUFFER_SIZE];
             DatagramPacket responsePacket = new DatagramPacket(buffer, buffer.length);
             socket.receive(responsePacket);
 
@@ -77,7 +79,7 @@ public class Client {
             if (attempts == MAX_RETRIES) {
               System.out.println("Сервер недоступен после " + MAX_RETRIES + " попыток");
             }
-            Thread.sleep(100);
+            Thread.sleep(SLEEP_MS);
           }
         }
       }
