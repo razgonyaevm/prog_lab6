@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.network.Response;
 import com.example.service.model.Movie;
 import com.example.xml.XMLHandler;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,7 +11,7 @@ import lombok.Getter;
 
 /** Класс для управления коллекцией с элементами {@link Movie} */
 @Getter
-public class MovieCollection {
+public class MovieCollection implements Serializable {
   private final LinkedList<Movie> movies = new LinkedList<>();
   private final LocalDateTime initializationDate = LocalDateTime.now();
 
