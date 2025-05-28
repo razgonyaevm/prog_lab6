@@ -22,8 +22,8 @@ public class Client {
   public static void main(String[] args) {
     try (DatagramSocket socket = new DatagramSocket()) {
       socket.setSoTimeout(TIMEOUT_MS);
-      InetAddress address = InetAddress.getByName("localhost");
-      int port = 12345;
+      InetAddress address = InetAddress.getByName(System.getenv("HOST"));
+      int port = Integer.parseInt(System.getenv("PORT"));
       Scanner scanner = new Scanner(System.in);
 
       logger.info("Клиент запущен");
