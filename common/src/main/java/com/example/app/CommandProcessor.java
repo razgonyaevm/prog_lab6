@@ -24,7 +24,7 @@ public class CommandProcessor {
         }
         case "add" -> {
           if (executeScript) {
-            return invoker.execute(new AddCommand(collection, scanner, true));
+            return invoker.execute(new AddExecutionCommand(collection, scanner));
           }
           return new Response("Команда 'add' должна содержать данные фильма", false);
         }

@@ -5,6 +5,7 @@ import com.example.app.GenericCommand;
 import com.example.app.commands.*;
 import com.example.network.Response;
 import com.example.parsing.ScanMovie;
+import com.example.service.MovieCollection;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -34,9 +35,13 @@ public class Client {
 
         Command command;
         switch (input.trim().split("\\s+")[0]) {
-          case "add" -> command = new AddCommand(null, new ScanMovie(scanner, false).getMovie());
+          case "add" ->
+              command =
+                  new AddCommand(new MovieCollection(), new ScanMovie(scanner, false).getMovie());
           case "update" ->
-              command = new UpdateCommand(null, new ScanMovie(scanner, false).getMovie(), input);
+              command =
+                  new UpdateCommand(
+                      new MovieCollection(), new ScanMovie(scanner, false).getMovie(), input);
           default -> command = new GenericCommand(input);
         }
 
