@@ -24,7 +24,7 @@ public class Server {
     this.collection = new MovieCollection();
     XMLHandler xmlHandler = new XMLHandler(filePath);
     this.collection.setMovies(xmlHandler.load().collection());
-    this.connectionHandler = new ConnectionHandler("localhost", port);
+    this.connectionHandler = new ConnectionHandler(System.getenv("HOST"), port);
     this.requestReader = new RequestReader();
     this.responseSender = new ResponseSender();
     this.invoker = new CommandInvoker();
@@ -86,7 +86,7 @@ public class Server {
 
   public static void main(String[] args) {
     try {
-      Server server = new Server("resources/collection.xml", 12345);
+      Server server = new Server("resources/collection.xml", Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);
