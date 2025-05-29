@@ -74,7 +74,6 @@ public class Server {
               result.clientAddress(),
               new Response("Ошибка сервера: " + e.getMessage(), false));
         }
-        Thread.sleep(100);
       }
     }
   }
