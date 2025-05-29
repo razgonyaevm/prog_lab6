@@ -78,17 +78,22 @@ public class Server {
   }
 
   public void saveCollection() {
-    collection.save(System.getenv("COLLECTION_FILE_PATH"));
-    logger.info("Коллекция сохранена в файл");
+    logger.info(collection.save(System.getenv("COLLECTION_FILE_PATH")));
   }
 
   public static void main(String[] args) {
+    Server server = null;
     try {
-      Server server =
+      server =
           new Server(System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);
+    }
+    finally {
+      if (server != null) {
+        server.saveCollection();
+      }
     }
   }
 }
