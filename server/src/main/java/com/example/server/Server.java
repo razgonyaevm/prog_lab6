@@ -85,12 +85,12 @@ public class Server {
     Server server = null;
     try {
       server =
-          new Server(System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
+          new Server(
+              System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);
-    }
-    finally {
+    } finally {
       if (server != null) {
         server.saveCollection();
       }

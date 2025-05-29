@@ -75,7 +75,7 @@ public class MovieCollection implements Serializable {
   /** Удаляет первый элемент коллекции */
   public boolean removeFirst() {
     if (!movies.isEmpty()) {
-      ((LinkedList<Movie>) movies).removeFirst();  // Без явного приведения не компилируется
+      ((LinkedList<Movie>) movies).removeFirst(); // Без явного приведения не компилируется
       return true;
     } else {
       return false;
