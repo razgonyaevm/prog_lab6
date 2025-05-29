@@ -36,7 +36,6 @@ public class Server {
     invoker.register("info", new InfoCommand(collection));
     invoker.register("show", new ShowCommand(collection));
     invoker.register("clear", new ClearCommand(collection));
-    invoker.register("exit", new ExitCommand());
     invoker.register("remove_first", new RemoveFirstProgram(collection));
     invoker.register("reorder", new ReorderCommand(collection));
     invoker.register("sum_of_length", new SumOfLengthCommand(collection));
