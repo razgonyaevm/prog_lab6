@@ -151,6 +151,11 @@ public class Client {
         ByteArrayInputStream bis = new ByteArrayInputStream(buffer, 0, responsePacket.getLength());
         ObjectInputStream ois = new ObjectInputStream(bis);
         Response response = (Response) ois.readObject();
+        if (!response.isStatus()) {
+          logger.error("Ответ сервера: {}", response.getMessage());
+        } else {
+          logger.info("Ответ сервера: {}", response.getMessage());
+        }
         System.out.println("Ответ сервера: " + response.getMessage());
 
         success = true;
