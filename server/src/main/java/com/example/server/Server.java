@@ -23,7 +23,7 @@ public class Server {
   public Server(String filePath, int port) throws IOException {
     this.collection = new MovieCollection();
     XMLHandler xmlHandler = new XMLHandler(filePath);
-    this.collection.setMovies(xmlHandler.load().collection());
+    this.collection.setMovies(xmlHandler.load());
     this.connectionHandler = new ConnectionHandler(System.getenv("HOST"), port);
     this.requestReader = new RequestReader();
     this.responseSender = new ResponseSender();

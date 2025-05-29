@@ -16,6 +16,6 @@ public class SaveCommand implements Command {
 
   @Override
   public Response execute() {
-    return collection.save(filePath);
+    return new Response(collection.save(filePath), true);
   }
 }

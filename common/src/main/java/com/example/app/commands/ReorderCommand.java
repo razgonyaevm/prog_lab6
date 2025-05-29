@@ -14,6 +14,7 @@ public class ReorderCommand implements Command {
 
   @Override
   public Response execute() {
-    return collection.reorder();
+    collection.reorder();
+    return new Response("Элементы коллекции переставлены в обратном порядке", true);
   }
 }

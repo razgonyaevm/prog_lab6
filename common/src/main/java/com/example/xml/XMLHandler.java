@@ -1,6 +1,5 @@
 package com.example.xml;
 
-import com.example.network.Response;
 import com.example.service.model.Movie;
 import com.example.validate.IdsValidator;
 import com.example.validate.MovieValidator;
@@ -28,7 +27,7 @@ public class XMLHandler {
   }
 
   /** Сохранение коллекции в файл (пользователь сам прописывает путь до файла) */
-  public Response save(LinkedList<Movie> movies) {
+  public String save(LinkedList<Movie> movies) {
 
     if (filePath.charAt(0) == '~')
       filePath = System.getProperty("user.home") + filePath.substring(1);
@@ -51,29 +50,23 @@ public class XMLHandler {
       wrapper.setMovies(movies);
 
       marshaller.marshal(wrapper, osw);
-      return new Response("Коллекция сохранена", true);
+      return "Коллекция сохранена";
     } catch (Exception e) {
-      return new Response("Ошибка при сохранении XML: " + e.getMessage(), false);
+      return "Ошибка при сохранении XML: " + e.getMessage();
     }
   }
 
   /** Загрузка коллекции из локального репозитория */
-  public Pair<LinkedList<Movie>, Response> load() {
-    String response;
+  public LinkedList<Movie> load() {
     try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
       return getMovies(br);
-    } catch (FileNotFoundException e) {
-      response = "Файл не найден";
-    } catch (IOException e) {
-      response = "Ошибка при чтении файла: " + e.getMessage();
     } catch (Exception e) {
-      response = "Ошибка загрузки XML: " + e.getMessage();
+      return new LinkedList<>();
     }
-    return new Pair<>(new LinkedList<>(), new Response(response, false));
   }
 
   /** Получение коллекции из BufferedReader */
-  private Pair<LinkedList<Movie>, Response> getMovies(BufferedReader br) {
+  private LinkedList<Movie> getMovies(BufferedReader br) {
     try {
       JAXBContext context = JAXBContext.newInstance(MovieCollectionWrapper.class);
       Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -87,10 +80,9 @@ public class XMLHandler {
       for (Movie movie : movies) {
         movieValidator.validate(movie);
       }
-      return new Pair<>(movies, new Response("Коллекция загружена", true));
+      return movies;
     } catch (Exception e) {
-      return new Pair<>(
-          new LinkedList<>(), new Response("Ошибка загрузки XML: " + e.getMessage(), false));
+      return new LinkedList<>();
     }
   }
 }

@@ -14,6 +14,7 @@ public class ShowCommand implements Command {
 
   @Override
   public Response execute() {
-    return collection.show();
+    String result = collection.show();
+    return new Response(result, true);
   }
 }

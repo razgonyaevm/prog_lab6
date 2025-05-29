@@ -35,7 +35,8 @@ public class AddCommand implements Command, Serializable {
         return new Response("Ошибка: данные фильма не предоставлены", false);
       }
       movie.generateId();
-      return collection.add(movie);
+      collection.add(movie);
+      return new Response("Фильм успешно добавлен", true);
     } catch (Exception e) {
       return new Response("Ошибка при добавлении фильма: " + e.getMessage(), false);
     }

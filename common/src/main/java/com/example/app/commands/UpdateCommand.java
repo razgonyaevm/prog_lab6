@@ -47,14 +47,14 @@ public class UpdateCommand implements Command, Serializable {
       if (id <= 0) {
         return new Response("ID must be greater than 0", false);
       }
-      for (int i = 0; i < Integer.parseInt(collection.size().getMessage()); i++) {
+      for (int i = 0; i < collection.size(); i++) {
         if (collection.get(i).getId().equals(id)) {
           if (executeScript) {
             movie = new ScanMovie(scanner, true).getMovie();
           }
           collection.update(id, movie);
+          return new Response("Фильм c id " + id + " успешно обновлен", true);
         }
-        return new Response("Фильм успешно обновлен", true);
       }
       return new Response("Фильм с таким ID не найден.", false);
     } catch (IllegalArgumentException e) {

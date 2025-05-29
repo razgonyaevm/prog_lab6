@@ -22,6 +22,8 @@ public class RemoveAtCommand implements Command {
     if (parts.length != 2) {
       return new Response("Ошибка: укажите id", false);
     }
-    return collection.removeAt(parseInt(command.trim().split("\\s+")[1]));
+    return collection.removeAt(parseInt(command.trim().split("\\s+")[1]))
+        ? new Response("Элемент удален", true)
+        : new Response("Ошибка: неверный индекс или элемент не найден", false);
   }
 }

@@ -20,6 +20,7 @@ public class AddExecutionCommand implements Command {
   public Response execute() {
     Movie newMovie = new ScanMovie(scanner, true).getMovie();
     newMovie.generateId();
-    return collection.add(newMovie);
+    collection.add(newMovie);
+    return new Response("Фильм успешно добавлен", true);
   }
 }

@@ -22,6 +22,9 @@ public class RemoveByIdCommand implements Command {
     if (parts.length != 2) {
       return new Response("Ошибка: укажите id", false);
     }
-    return collection.removeById(parseLong(parts[1]));
+    long id = parseLong(parts[1]);
+    return collection.removeById(id)
+        ? new Response("Фильм с id " + id + " успешно удален", true)
+        : new Response("Фильм с таким id не найден", false);
   }
 }

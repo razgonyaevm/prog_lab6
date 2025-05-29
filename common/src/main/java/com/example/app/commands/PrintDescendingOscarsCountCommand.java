@@ -15,6 +15,6 @@ public class PrintDescendingOscarsCountCommand implements Command {
 
   @Override
   public Response execute() {
-    return collection.printDescendingOscarsCount();
+    return new Response(collection.printDescendingOscarsCount(), true);
   }
 }

@@ -19,6 +19,6 @@ public class CountByOperator implements Command {
     if (operatorName == null || operatorName.isBlank()) {
       return new Response("Ошибка: укажите имя оператора", false);
     }
-    return collection.countByOperator(operatorName);
+    return new Response(collection.countByOperator(operatorName), true);
   }
 }

@@ -14,6 +14,6 @@ public class SumOfLengthCommand implements Command {
 
   @Override
   public Response execute() {
-    return collection.sumOfLength();
+    return new Response(collection.sumOfLength(), true);
   }
 }

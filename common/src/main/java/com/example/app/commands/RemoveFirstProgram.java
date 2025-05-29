@@ -14,6 +14,8 @@ public class RemoveFirstProgram implements Command {
 
   @Override
   public Response execute() {
-    return collection.removeFirst();
+    return collection.removeFirst()
+        ? new Response("Первый элемент коллекции удален", true)
+        : new Response("В коллекции нет элементов", false);
   }
 }
