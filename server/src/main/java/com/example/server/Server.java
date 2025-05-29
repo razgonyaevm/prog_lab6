@@ -79,14 +79,14 @@ public class Server {
   }
 
   public void saveCollection() {
-    collection.save("resources/collection.xml");
+    collection.save(System.getenv("COLLECTION_FILE_PATH"));
     logger.info("Коллекция сохранена в файл");
   }
 
   public static void main(String[] args) {
     try {
       Server server =
-          new Server("resources/collection.xml", Integer.parseInt(System.getenv("PORT")));
+          new Server(System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);
