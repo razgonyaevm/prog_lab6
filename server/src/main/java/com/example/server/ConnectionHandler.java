@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 /** Модуль приёма подключений Класс для работы с сетевым каналом */
 public class ConnectionHandler {
   private static final Logger logger = LogManager.getLogger(ConnectionHandler.class);
+  private static final int BUFFER_SIZE = 65535;
 
   @Getter private final DatagramChannel channel;
   private final ByteBuffer buffer;
@@ -19,7 +20,7 @@ public class ConnectionHandler {
     this.channel = DatagramChannel.open();
     this.channel.configureBlocking(false);
     this.channel.socket().bind(new InetSocketAddress(ip, port));
-    this.buffer = ByteBuffer.allocate(65535);
+    this.buffer = ByteBuffer.allocate(BUFFER_SIZE);
     logger.info("Сервер запущен на порту {}", port);
   }
 
