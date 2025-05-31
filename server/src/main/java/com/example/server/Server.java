@@ -1,12 +1,12 @@
 package com.example.server;
 
-import static com.example.app.CommandProcessor.processCommand;
-
 import com.example.app.Command;
+import com.example.app.CommandData;
 import com.example.app.CommandInvoker;
 import com.example.app.commands.*;
 import com.example.network.Response;
 import com.example.service.MovieCollection;
+import com.example.service.model.Movie;
 import com.example.xml.XMLHandler;
 import java.io.*;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +19,7 @@ public class Server {
   private final RequestReader requestReader;
   private final ResponseSender responseSender;
   private final CommandInvoker invoker;
+  private final BufferedReader consoleReader;
 
   public Server(String filePath, int port) throws IOException {
     this.collection = new MovieCollection();
@@ -28,6 +29,7 @@ public class Server {
     this.requestReader = new RequestReader();
     this.responseSender = new ResponseSender();
     this.invoker = new CommandInvoker();
+    this.consoleReader = new BufferedReader(new InputStreamReader(System.in));
   }
 
   public void start() throws IOException, InterruptedException {
@@ -44,26 +46,21 @@ public class Server {
 
     logger.info("Сервер запущен");
 
-    Runtime.getRuntime()
-        .addShutdownHook(new Thread(this::saveCollection)); // Сохранение при завершении
-
     while (true) {
+      if (consoleReader.ready()) {
+        String input = consoleReader.readLine().trim().toLowerCase();
+        if (input.equals("exit")) {
+          logger.info("Сервер останавливается и сохраняет коллекцию в файл");
+          saveCollection();
+          break;
+        }
+      }
       ReceiveResult result = connectionHandler.receive();
       if (result != null) {
         try {
-          Command command = requestReader.readCommand(result.buffer().array());
-          logger.debug("Команда дересериализована: {}", command);
-          Response response;
-          if (command instanceof AddCommand addCommand) {
-            response = invoker.execute(new AddCommand(collection, addCommand.getMovie()));
-          } else if (command instanceof UpdateCommand updateCommand) {
-            response =
-                invoker.execute(
-                    new UpdateCommand(
-                        collection, updateCommand.getMovie(), updateCommand.getCommand()));
-          } else {
-            response = processCommand(command.toString(), collection, invoker, false);
-          }
+          CommandData commandData = requestReader.readCommandData(result.buffer().array());
+          logger.debug("Команда дересериализована: {}", commandData.name());
+          Response response = processCommandData(commandData);
           responseSender.sendResponse(
               connectionHandler.getChannel(), result.clientAddress(), response);
         } catch (IOException e) {
@@ -77,23 +74,54 @@ public class Server {
     }
   }
 
+  private Response processCommandData(CommandData commandData) {
+    String commandName = commandData.name().toLowerCase();
+    Object args = commandData.arguments();
+
+    Command command;
+    switch (commandName) {
+      case "add":
+        if (args instanceof Movie movie) {
+          command = new AddCommand(collection, movie);
+        } else {
+          return new Response("Некорректные аргументы для команды add: ожидается Movie", false);
+        }
+        break;
+      case "update":
+        if (args instanceof Object[] arr
+            && arr.length == 2
+            && arr[0] instanceof Movie movie
+            && arr[1] instanceof String input) {
+          command = new UpdateCommand(collection, movie, input);
+        } else {
+          return new Response(
+              "Некорректные аргументы для команды update: ожидается Movie и строка", false);
+        }
+        break;
+      default:
+        if (invoker.isRegistered(commandName)) {
+          command = invoker.getCommand(commandName);
+        } else {
+          return new Response("Неизвестная команда: " + commandName, false);
+        }
+        break;
+    }
+
+    return invoker.execute(command);
+  }
+
   public void saveCollection() {
     logger.info(collection.save(System.getenv("COLLECTION_FILE_PATH")));
   }
 
   public static void main(String[] args) {
-    Server server = null;
     try {
-      server =
+      Server server =
           new Server(
               System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);
-    } finally {
-      if (server != null) {
-        server.saveCollection();
-      }
     }
   }
 }

@@ -1,11 +1,8 @@
 package com.example.client;
 
-import com.example.app.Command;
-import com.example.app.GenericCommand;
-import com.example.app.commands.*;
+import com.example.app.CommandData;
 import com.example.network.Response;
 import com.example.parsing.ScanMovie;
-import com.example.service.MovieCollection;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -36,8 +33,8 @@ public class Client {
         if (input.trim().equals("exit")) break;
 
         // Обрабатываем ввод пользователя
-        List<Command> commands = processInput(input, scanner);
-        for (Command command : commands) {
+        List<CommandData> commands = processInput(input, scanner);
+        for (CommandData command : commands) {
           sendCommand(socket, address, port, command);
         }
       }
@@ -46,8 +43,8 @@ public class Client {
     }
   }
 
-  private static List<Command> processInput(String input, Scanner scanner) {
-    List<Command> commands = new ArrayList<>();
+  private static List<CommandData> processInput(String input, Scanner scanner) {
+    List<CommandData> commands = new ArrayList<>();
     String[] parts = input.trim().split("\\s+");
     String commandName = parts[0].toLowerCase();
 
@@ -55,13 +52,13 @@ public class Client {
       String filePath = parts[1];
       commands.addAll(executeScript(filePath, scanner));
     } else {
-      commands.add(createCommand(input, scanner, false));
+      commands.add(createCommandData(input, scanner, false));
     }
     return commands;
   }
 
-  private static List<Command> executeScript(String filePath, Scanner scanner) {
-    List<Command> commands = new ArrayList<>();
+  private static List<CommandData> executeScript(String filePath, Scanner scanner) {
+    List<CommandData> commands = new ArrayList<>();
     Stack<String> scriptStack = new Stack<>();
     Set<String> visitedFiles = new HashSet<>();
     scriptStack.push(filePath);
@@ -94,7 +91,7 @@ public class Client {
             scriptStack.push(nestedFilePath);
           } else {
             try {
-              commands.add(createCommand(line, fileScanner, true));
+              commands.add(createCommandData(line, fileScanner, true));
             } catch (IllegalArgumentException e) {
               logger.warn("Ошибка в команде: '{}': {}", line, e.getMessage());
               System.out.println("Ошибка в скрипте: " + e.getMessage());
@@ -110,22 +107,21 @@ public class Client {
     return commands;
   }
 
-  private static Command createCommand(String input, Scanner scanner, boolean fromScript) {
+  private static CommandData createCommandData(String input, Scanner scanner, boolean fromScript) {
     String[] parts = input.trim().split("\\s+");
     String commandName = parts[0].toLowerCase();
 
     return switch (commandName) {
-      case "add" ->
-          new AddCommand(new MovieCollection(), new ScanMovie(scanner, fromScript).getMovie());
+      case "add" -> new CommandData("add", new ScanMovie(scanner, fromScript).getMovie());
       case "update" ->
-          new UpdateCommand(
-              new MovieCollection(), new ScanMovie(scanner, fromScript).getMovie(), input);
-      default -> new GenericCommand(input);
+          new CommandData(
+              "update", new Object[] {new ScanMovie(scanner, fromScript).getMovie(), input});
+      default -> new CommandData(commandName, input);
     };
   }
 
   private static void sendCommand(
-      DatagramSocket socket, InetAddress address, int port, Command command) {
+      DatagramSocket socket, InetAddress address, int port, CommandData command) {
     int attempts = 0;
     boolean success = false;
 

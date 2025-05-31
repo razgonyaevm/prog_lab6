@@ -25,4 +25,12 @@ public class CommandInvoker {
   public Response execute(Command command) {
     return command.execute();
   }
+
+  public boolean isRegistered(String commandName) {
+    return commands.containsKey(commandName);
+  }
+
+  public Command getCommand(String commandName) {
+    return commands.get(commandName);
+  }
 }
