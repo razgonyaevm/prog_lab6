@@ -8,12 +8,14 @@ import com.example.network.Response;
 import com.example.service.MovieCollection;
 import com.example.service.model.Movie;
 import com.example.xml.XMLHandler;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.io.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Server {
   private static final Logger logger = LogManager.getLogger(Server.class);
+  private static final Dotenv dotenv = Dotenv.load();
   private final MovieCollection collection;
   private final ConnectionHandler connectionHandler;
   private final RequestReader requestReader;
@@ -25,7 +27,7 @@ public class Server {
     this.collection = new MovieCollection();
     XMLHandler xmlHandler = new XMLHandler(filePath);
     this.collection.setMovies(xmlHandler.load());
-    this.connectionHandler = new ConnectionHandler(System.getenv("HOST"), port);
+    this.connectionHandler = new ConnectionHandler(dotenv.get("HOST"), port);
     this.requestReader = new RequestReader();
     this.responseSender = new ResponseSender();
     this.invoker = new CommandInvoker();
@@ -111,14 +113,13 @@ public class Server {
   }
 
   public void saveCollection() {
-    logger.info(collection.save(System.getenv("COLLECTION_FILE_PATH")));
+    logger.info(collection.save(dotenv.get("COLLECTION_FILE_PATH")));
   }
 
   public static void main(String[] args) {
     try {
       Server server =
-          new Server(
-              System.getenv("COLLECTION_FILE_PATH"), Integer.parseInt(System.getenv("PORT")));
+          new Server(dotenv.get("COLLECTION_FILE_PATH"), Integer.parseInt(dotenv.get("PORT")));
       server.start();
     } catch (IOException | InterruptedException e) {
       logger.error("Ошибка работы сервера", e);

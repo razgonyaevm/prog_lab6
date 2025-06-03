@@ -3,6 +3,7 @@ package com.example.client;
 import com.example.app.CommandData;
 import com.example.network.Response;
 import com.example.parsing.ScanMovie;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Client {
   private static final Logger logger = LogManager.getLogger(Client.class);
+  private static final Dotenv dotenv = Dotenv.load();
   private static final int TIMEOUT_MS = 5000;
   private static final int MAX_RETRIES = 3;
   private static final int SLEEP_MS = 1000;
@@ -21,8 +23,8 @@ public class Client {
   public static void main(String[] args) {
     try (DatagramSocket socket = new DatagramSocket()) {
       socket.setSoTimeout(TIMEOUT_MS);
-      InetAddress address = InetAddress.getByName(System.getenv("HOST"));
-      int port = Integer.parseInt(System.getenv("PORT"));
+      InetAddress address = InetAddress.getByName(dotenv.get("HOST"));
+      int port = Integer.parseInt(dotenv.get("PORT"));
       Scanner scanner = new Scanner(System.in);
 
       logger.info("Клиент запущен");
