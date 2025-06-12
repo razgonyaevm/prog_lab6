@@ -196,15 +196,6 @@ public class Server {
       CommandFactory factory = commandFactories.get(commandName);
       if (factory == null) {
         Response response = new Response("Неизвестная команда: " + commandName, false);
-        //        responsePool.execute(
-        //            () -> {
-        //              try {
-        //                responseSender.sendResponse(
-        //                    connectionHandler.getChannel(), result.clientAddress(), response);
-        //              } catch (IOException e) {
-        //                logger.error("Ошибка отправки ответа", e);
-        //              }
-        //            });
         sendResponseSafety(commandName, "неизвестная команда", response, result.clientAddress());
         return;
       }
@@ -215,17 +206,6 @@ public class Server {
           Response response = new Response("Неавторизованный доступ", false);
           sendResponseSafety(
               commandName, "неавторизованный доступ", response, result.clientAddress());
-          //          responsePool.execute(
-          //              () -> {
-          //                try {
-          //                  responseSender.sendResponse(
-          //                      connectionHandler.getChannel(),
-          //                      result.clientAddress(),
-          //                      new Response("Неавторизованный доступ", false));
-          //                } catch (IOException e) {
-          //                  logger.error("Ошибка отправки ответа", e);
-          //                }
-          //              });
           return;
         }
       }
@@ -242,53 +222,10 @@ public class Server {
         response = new Response("Ошибка сервера: " + e.getMessage(), false);
       }
       sendResponseSafety(commandName, "команда", response, result.clientAddress());
-
-      // обработка команды в отдельном потоке
-      //      new Thread(
-      //              () -> {
-      //                Response response;
-      //                try {
-      //                  Command command = factory.createCommand(collection, commandData, login,
-      // password);
-      //                  response = invoker.execute(command, userManager);
-      //                } catch (IllegalArgumentException e) {
-      //                  logger.warn(
-      //                      "Некорректные аргументы для команды {}: {}", commandName,
-      // e.getMessage());
-      //                  response = new Response(e.getMessage(), false);
-      //                } catch (Exception e) {
-      //                  logger.error("Ошибка обработки команды {}: {}", commandName,
-      // e.getMessage(), e);
-      //                  response = new Response("Ошибка сервера: " + e.getMessage(), false);
-      //                }
-      //                Response finalResponse = response;
-      //                responsePool.execute(
-      //                    () -> {
-      //                      try {
-      //                        responseSender.sendResponse(
-      //                            connectionHandler.getChannel(), result.clientAddress(),
-      // finalResponse);
-      //                      } catch (IOException e) {
-      //                        throw new RuntimeException(e);
-      //                      }
-      //                    });
-      //              })
-      //          .start();
     } catch (IOException e) {
       logger.error("Ошибка обработки запроса: {}", e.getMessage(), e);
       Response response = new Response("Ошибка сервера: " + e.getMessage(), false);
       sendResponseSafety("unknown", "обработка запроса", response, result.clientAddress());
-      //      responsePool.execute(
-      //          () -> {
-      //            try {
-      //              responseSender.sendResponse(
-      //                  connectionHandler.getChannel(),
-      //                  result.clientAddress(),
-      //                  new Response("Ошибка сервера: " + e.getMessage(), false));
-      //            } catch (IOException ex) {
-      //              logger.error("Ошибка отправки ответа", ex);
-      //            }
-      //          });
     }
   }
 
