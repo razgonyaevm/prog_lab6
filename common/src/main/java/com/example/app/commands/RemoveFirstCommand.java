@@ -6,13 +6,13 @@ import com.example.service.MovieCollection;
 import com.example.service.UserManager;
 import com.example.service.model.User;
 
-/** Изменяет порядок фильмов на обратный */
-public class ReorderCommand implements Command {
+/** Удаление первого фильма из коллекции */
+public class RemoveFirstCommand implements Command {
   private final MovieCollection collection;
   private final String login;
   private final String password;
 
-  public ReorderCommand(MovieCollection collection, String login, String password) {
+  public RemoveFirstCommand(MovieCollection collection, String login, String password) {
     this.collection = collection;
     this.login = login;
     this.password = password;
@@ -24,7 +24,9 @@ public class ReorderCommand implements Command {
     if (user == null) {
       return new Response("Неавторизованный доступ", false);
     }
-    collection.reorder();
-    return new Response("Элементы коллекции переставлены в обратном порядке", true);
+    if (collection.removeFirst(user)) {
+      return new Response("Первый элемент коллекции пользователя удален", true);
+    }
+    return new Response("Ошибка удаления первого элемента коллекции", false);
   }
 }

@@ -1,6 +1,7 @@
 package com.example.app;
 
 import com.example.network.Response;
+import com.example.service.UserManager;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,18 +13,18 @@ public class CommandInvoker {
     commands.put(commandName, command);
   }
 
-  public Response execute(String commandName) {
+  public Response execute(String commandName, UserManager userManager) {
     Command command = commands.get(commandName);
     if (command != null) {
-      return command.execute();
+      return command.execute(userManager);
     } else {
       return new Response(
           "Ошибка в команде. Для вывода справки, воспользуйтесь командой help", false);
     }
   }
 
-  public Response execute(Command command) {
-    return command.execute();
+  public Response execute(Command command, UserManager userManager) {
+    return command.execute(userManager);
   }
 
   public boolean isRegistered(String commandName) {

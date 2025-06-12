@@ -3,18 +3,30 @@ package com.example.app.commands;
 import com.example.app.Command;
 import com.example.network.Response;
 import com.example.service.MovieCollection;
+import com.example.service.UserManager;
+import com.example.service.model.User;
 
 /** Очищает коллекцию */
 public class ClearCommand implements Command {
   private final MovieCollection collection;
+  private final String login;
+  private final String password;
 
-  public ClearCommand(MovieCollection collection) {
+  public ClearCommand(MovieCollection collection, String login, String password) {
     this.collection = collection;
+    this.login = login;
+    this.password = password;
   }
 
   @Override
-  public Response execute() {
-    collection.clear();
-    return new Response("Коллекция очищена", true);
+  public Response execute(UserManager userManager) {
+    User user = userManager.verify(login, password);
+    if (user == null) {
+      return new Response("Неавторизованный доступ", false);
+    }
+    if (collection.clear(user)) {
+      return new Response("Коллекция пользователя очищена", true);
+    }
+    return new Response("Ошибка очистки коллекции", false);
   }
 }
