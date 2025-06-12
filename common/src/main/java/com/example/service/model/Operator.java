@@ -15,7 +15,8 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 @ToString
 @NoArgsConstructor
-public class Person extends ParserClass implements Serializable {
+public class Operator extends ParserClass implements Serializable {
+  @Setter private Long id;
   private String name;
   private Long height;
   private float weight;
@@ -26,12 +27,16 @@ public class Person extends ParserClass implements Serializable {
   private static final Validator<Long> heightValidator = new HeightValidator();
   private static final Validator<Float> weightValidator = new WeightValidator();
 
-  public Person(String name, Long height, float weight, Color eyeColor, Country nationality) {
+  public Operator(String name, Long height, float weight, Color eyeColor, Country nationality) {
     setName(name);
     setHeight(height);
     setWeight(weight);
     this.eyeColor = eyeColor;
     this.nationality = nationality;
+  }
+
+  public void generateId() {
+    this.id = IdGenerator.getNextId();
   }
 
   /** Устанавливает имя */

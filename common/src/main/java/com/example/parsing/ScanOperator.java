@@ -4,22 +4,23 @@ import static com.example.parsing.ParserClass.*;
 
 import com.example.service.enums.Color;
 import com.example.service.enums.Country;
-import com.example.service.model.Person;
+import com.example.service.model.Operator;
 import java.util.Arrays;
 import java.util.Scanner;
 import lombok.Getter;
 
-/** Класс для сканирования оператора в виде объекта класса {@link Person} */
+/** Класс для сканирования оператора в виде объекта класса {@link Operator} */
 public class ScanOperator {
   private final Scanner scanner;
-  @Getter private final Person operator;
+  @Getter private final Operator operator;
   private final Boolean executeScript;
 
   public ScanOperator(Scanner scanner, Boolean executeScript) {
     this.scanner = scanner;
-    operator = new Person();
+    operator = new Operator();
     this.executeScript = executeScript;
     setOperator();
+    operator.generateId();
   }
 
   public void setOperator() {

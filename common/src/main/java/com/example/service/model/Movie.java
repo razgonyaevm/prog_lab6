@@ -25,12 +25,13 @@ public class Movie extends ParserClass implements Comparable<Movie>, Serializabl
   @XmlElement @Setter private Long id;
   private String name;
   private Coordinates coordinates;
-  @XmlTransient private final LocalDate creationDate;
+  @XmlTransient @Setter private LocalDate creationDate;
   private int oscarsCount;
   private Integer length;
   @Setter private MovieGenre genre;
   @Setter private MpaaRating mpaaRating;
-  @Setter private Person operator;
+  @Setter private Operator operator;
+  @Setter private User owner;
 
   private static final Validator<String> nameValidator = new NameValidator();
   private static final Validator<Coordinates> coordinatesValidator = new CoordinateValidator();
@@ -48,7 +49,8 @@ public class Movie extends ParserClass implements Comparable<Movie>, Serializabl
       Integer length,
       MovieGenre genre,
       MpaaRating mpaaRating,
-      Person operator) {
+      Operator operator,
+      User owner) {
 
     this();
 
@@ -59,16 +61,12 @@ public class Movie extends ParserClass implements Comparable<Movie>, Serializabl
     setGenre(genre);
     setMpaaRating(mpaaRating);
     setOperator(operator);
+    setOwner(owner);
   }
 
   /** Устанавливает id */
   public void generateId() {
     this.id = IdGenerator.getNextId();
-  }
-
-  /** Установка собственного значения id для метода update */
-  public void updateId(long id) {
-    this.id = id;
   }
 
   /** Устанавливает названия фильма */
