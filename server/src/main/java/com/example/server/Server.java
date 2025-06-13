@@ -5,6 +5,8 @@ import com.example.app.CommandData;
 import com.example.app.CommandFactory;
 import com.example.app.CommandInvoker;
 import com.example.app.commands.*;
+import com.example.config.DatabaseConfig;
+import com.example.config.DotenvDatabaseConfig;
 import com.example.network.Response;
 import com.example.service.MovieCollection;
 import com.example.service.UserManager;
@@ -35,8 +37,9 @@ public class Server {
   private final BlockingQueue<ReceiveResult> requestQueue = new LinkedBlockingQueue<>();
 
   public Server(int port) throws IOException {
-    this.collection = new MovieCollection();
-    this.userManager = new UserManager();
+    DatabaseConfig dbConfig = new DotenvDatabaseConfig();
+    this.collection = new MovieCollection(dbConfig);
+    this.userManager = new UserManager(dbConfig);
     this.connectionHandler = new ConnectionHandler(dotenv.get("HOST"), port);
     this.requestReader = new RequestReader();
     this.responseSender = new ResponseSender();

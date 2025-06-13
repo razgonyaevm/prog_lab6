@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.config.DatabaseConfig;
 import com.example.service.enums.Color;
 import com.example.service.enums.Country;
 import com.example.service.enums.MovieGenre;
@@ -29,18 +30,19 @@ public class MovieCollection implements Serializable {
   private static final Dotenv dotenv = Dotenv.load();
   private final List<Movie> movies = new LinkedList<>();
   private final ReentrantLock lock = new ReentrantLock();
-  private final String dbUrl = dotenv.get("DB_URL");
-  private final String dbUser = dotenv.get("DB_USER");
-  private final String dbPassword = dotenv.get("DB_PASSWORD");
+  private final DatabaseConfig dbConfig;
 
-  public MovieCollection() {
+  public MovieCollection(DatabaseConfig dbConfig) {
+    this.dbConfig = dbConfig;
     loadFromDatabase();
   }
 
   /** Загрузка коллекции из базы данных */
   private void loadFromDatabase() {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       String sql =
           "SELECT m.id, m.name, m.length, m.first_coordinate, m.second_coordinate, m.oscars_count, m.genre, "
               + "m.mpaa_rating, m.created_at, o.id as operator_id, o.name as operator_name, o.height, o.weight, "
@@ -103,7 +105,9 @@ public class MovieCollection implements Serializable {
   /** Поиск или создание оператора в таблице operators */
   public Operator getOrCreateOperator(Operator operator) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       // Поиск существующего оператора
       String selectSql =
           "SELECT id FROM operators WHERE name = ? AND height = ? AND weight = ? "
@@ -167,7 +171,9 @@ public class MovieCollection implements Serializable {
   /** Добавляет элемент в коллекцию */
   public boolean add(Movie movie, User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       Operator operator = getOrCreateOperator(movie.getOperator());
       movie.setOperator(operator);
@@ -219,7 +225,9 @@ public class MovieCollection implements Serializable {
   /** Устанавливает новый элемент на место с индексом id */
   public boolean update(long id, Movie movie, User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       Operator operator = getOrCreateOperator(movie.getOperator());
       movie.setOperator(operator);
@@ -275,7 +283,9 @@ public class MovieCollection implements Serializable {
   /** Очищает коллекцию */
   public boolean clear(User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       String sql = "DELETE FROM movies WHERE owner_id = ?";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -297,7 +307,9 @@ public class MovieCollection implements Serializable {
   /** Удаляет элемент по значению его id */
   public boolean removeById(long id, User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       String sql = "DELETE FROM movies WHERE id = ? AND owner_id = ? RETURNING id";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -356,7 +368,9 @@ public class MovieCollection implements Serializable {
   /** Удаляет элемент коллекции по индексу */
   public boolean removeAt(int index, User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       if (index < 0 || index >= movies.size()) {
         logger.warn("Некорректный индекс: {}", index);
@@ -399,7 +413,9 @@ public class MovieCollection implements Serializable {
   /** Удаляет первый элемент коллекции */
   public boolean removeFirst(User owner) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       conn.setAutoCommit(false);
       String sql =
           "DELETE FROM movies WHERE id = (SELECT MIN(id) FROM movies WHERE owner_id = ?) RETURNING id";

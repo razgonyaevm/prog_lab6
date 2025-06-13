@@ -1,7 +1,7 @@
 package com.example.service;
 
+import com.example.config.DatabaseConfig;
 import com.example.service.model.User;
-import io.github.cdimascio.dotenv.Dotenv;
 import java.security.MessageDigest;
 import java.sql.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,19 +11,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class UserManager {
-  private static final Dotenv dotenv = Dotenv.load();
   private static final Logger logger = LogManager.getLogger(UserManager.class);
-  private final String dbUrl = dotenv.get("DB_URL");
-  private final String dbUser = dotenv.get("DB_USER");
-  private final String dbPassword = dotenv.get("DB_PASSWORD");
+  private final DatabaseConfig dbConfig;
   private final ConcurrentHashMap<String, User> authenticatedUsers = new ConcurrentHashMap<>();
   private final ReentrantLock lock = new ReentrantLock();
   @Getter private User currentUser;
 
+  public UserManager(DatabaseConfig dbConfig) {
+    this.dbConfig = dbConfig;
+  }
+
   /** Регистрация пользователя */
   public User register(String login, String password) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       String sql = "INSERT INTO users (login, password) VALUES (?, ?) RETURNING id";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
         pstmt.setString(1, login);
@@ -49,7 +52,9 @@ public class UserManager {
   /** Авторизация пользователя */
   public User login(String login, String password) {
     lock.lock();
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       String sql = "SELECT id, login FROM users WHERE login = ? AND password = ?";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
         pstmt.setString(1, login);
@@ -77,7 +82,9 @@ public class UserManager {
     if (login == null || password == null) {
       return null;
     }
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       String sql = "SELECT id, login FROM users WHERE login = ? AND password = ?";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
         pstmt.setString(1, login);
@@ -113,7 +120,9 @@ public class UserManager {
 
   /** Проверка пароля */
   private boolean validatePassword(String login, String password) {
-    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+    try (Connection conn =
+        DriverManager.getConnection(
+            dbConfig.getDbUrl(), dbConfig.getDbUser(), dbConfig.getDbPassword())) {
       String sql = "SELECT password FROM users WHERE login = ?";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
         pstmt.setString(1, login);
