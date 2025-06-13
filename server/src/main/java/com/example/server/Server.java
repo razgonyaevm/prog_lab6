@@ -12,10 +12,11 @@ import com.example.service.model.Movie;
 import com.example.service.model.User;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.*;
-import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,6 +24,7 @@ public class Server {
   private static final Logger logger = LogManager.getLogger(Server.class);
   private static final Dotenv dotenv = Dotenv.load();
   private final ForkJoinPool responsePool = ForkJoinPool.commonPool();
+  private final ForkJoinPool commandPool = new ForkJoinPool();
   private final MovieCollection collection;
   private final UserManager userManager;
   private final ConnectionHandler connectionHandler;
@@ -30,6 +32,7 @@ public class Server {
   private final ResponseSender responseSender;
   private final BufferedReader consoleReader;
   private final Map<String, CommandFactory> commandFactories;
+  private final BlockingQueue<ReceiveResult> requestQueue = new LinkedBlockingQueue<>();
 
   public Server(int port) throws IOException {
     this.collection = new MovieCollection();
@@ -167,18 +170,33 @@ public class Server {
     CommandInvoker invoker = new CommandInvoker();
     logger.info("Сервер запущен");
 
+    // поток для обработки запросов
+    new Thread(
+            () -> {
+              while (true) {
+                try {
+                  ReceiveResult result = requestQueue.take();
+                  commandPool.submit(() -> processRequest(result, invoker));
+                } catch (InterruptedException e) {
+                  logger.error("Ошибка обработки очереди: {}", e.getMessage(), e);
+                  Thread.currentThread().interrupt();
+                }
+              }
+            })
+        .start();
+
     while (true) {
       if (consoleReader.ready()) {
         String input = consoleReader.readLine().trim().toLowerCase();
         if (input.equals("exit")) {
-          logger.info("Сервер останавливается и сохраняет коллекцию в файл");
-          break;
+          logger.info("Сервер останавливается");
+          System.exit(0);
         }
       }
 
       ReceiveResult result = connectionHandler.receive();
       if (result != null) {
-        new Thread(() -> processRequest(result, invoker)).start();
+        requestQueue.offer(result);
       }
     }
   }
@@ -196,7 +214,7 @@ public class Server {
       CommandFactory factory = commandFactories.get(commandName);
       if (factory == null) {
         Response response = new Response("Неизвестная команда: " + commandName, false);
-        sendResponseSafety(commandName, "неизвестная команда", response, result.clientAddress());
+        sendResponse(commandName, response, result);
         return;
       }
 
@@ -204,8 +222,7 @@ public class Server {
         User user = userManager.verify(login, password);
         if (user == null) {
           Response response = new Response("Неавторизованный доступ", false);
-          sendResponseSafety(
-              commandName, "неавторизованный доступ", response, result.clientAddress());
+          sendResponse(commandName, response, result);
           return;
         }
       }
@@ -221,21 +238,25 @@ public class Server {
         logger.error("Ошибка обработки команды {}: {}", commandName, e.getMessage(), e);
         response = new Response("Ошибка сервера: " + e.getMessage(), false);
       }
-      sendResponseSafety(commandName, "команда", response, result.clientAddress());
+      sendResponse(commandName, response, result);
     } catch (IOException e) {
       logger.error("Ошибка обработки запроса: {}", e.getMessage(), e);
       Response response = new Response("Ошибка сервера: " + e.getMessage(), false);
-      sendResponseSafety("unknown", "обработка запроса", response, result.clientAddress());
+      sendResponse("unknown", response, result);
     }
   }
 
-  private void sendResponseSafety(
-      String commandName, String context, Response response, SocketAddress clientAddress) {
-    try {
-      responseSender.sendResponse(connectionHandler.getChannel(), clientAddress, response);
-    } catch (IOException e) {
-      logger.error("Ошибка отправки ответа для {} {}: {}", context, commandName, e.getMessage(), e);
-    }
+  private void sendResponse(String commandName, Response response, ReceiveResult result) {
+    responsePool.execute(
+        () -> {
+          try {
+            responseSender.sendResponse(
+                connectionHandler.getChannel(), result.clientAddress(), response);
+          } catch (IOException e) {
+            logger.error(
+                "Ошибка отправки ответа для команды {}: {}", commandName, e.getMessage(), e);
+          }
+        });
   }
 
   public static void main(String[] args) {

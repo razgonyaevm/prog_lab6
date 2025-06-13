@@ -67,7 +67,10 @@ public class Client {
         // Обрабатываем ввод пользователя
         List<CommandData> commands = processInput(input, scanner);
         for (CommandData command : commands) {
-          sendCommand(socket, address, port, command);
+          Response response = sendCommand(socket, address, port, command);
+          if (response == null) {
+            System.out.println("Не удалось получить ответ от сервера");
+          }
         }
       }
     } catch (Exception e) {
