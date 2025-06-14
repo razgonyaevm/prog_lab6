@@ -63,19 +63,19 @@ public class MovieCollection implements Serializable {
           int oscarsCount = rs.getInt("oscars_count");
           Integer length = rs.getInt("length");
           if (rs.getString("genre") != null) {
-            genre = MovieGenre.valueOf(rs.getString("genre"));
+            genre = MovieGenre.valueOf(rs.getString("genre").trim().toUpperCase());
           }
           if (rs.getString("mpaa_rating") != null) {
-            mpaaRating = MpaaRating.valueOf(rs.getString("mpaa_rating"));
+            mpaaRating = MpaaRating.valueOf(rs.getString("mpaa_rating").trim().toUpperCase());
           }
 
           Color color = null;
           Country country = null;
           if (rs.getString("eye_color") != null) {
-            color = Color.valueOf(rs.getString("eye_color"));
+            color = Color.valueOf(rs.getString("eye_color").trim().toUpperCase());
           }
           if (rs.getString("country") != null) {
-            country = Country.valueOf(rs.getString("country"));
+            country = Country.valueOf(rs.getString("country").trim().toUpperCase());
           }
           Operator operator =
               new Operator(
@@ -119,12 +119,12 @@ public class MovieCollection implements Serializable {
         if (operator.getEyeColor() == null) {
           selectStmt.setNull(4, Types.CHAR);
         } else {
-          selectStmt.setString(4, operator.getEyeColor().toString());
+          selectStmt.setString(4, operator.getEyeColor().toString().trim().toUpperCase());
         }
         if (operator.getNationality() == null) {
           selectStmt.setNull(5, Types.VARCHAR);
         } else {
-          selectStmt.setString(5, operator.getNationality().toString());
+          selectStmt.setString(5, operator.getNationality().toString().trim().toUpperCase());
         }
         ResultSet rs = selectStmt.executeQuery();
         if (rs.next()) {
@@ -143,12 +143,12 @@ public class MovieCollection implements Serializable {
         if (operator.getEyeColor() == null) {
           insertStmt.setNull(4, Types.CHAR);
         } else {
-          insertStmt.setString(4, operator.getEyeColor().toString());
+          insertStmt.setString(4, operator.getEyeColor().toString().trim().toUpperCase());
         }
         if (operator.getNationality() == null) {
           insertStmt.setNull(5, Types.VARCHAR);
         } else {
-          insertStmt.setString(5, operator.getNationality().toString());
+          insertStmt.setString(5, operator.getNationality().toString().trim().toUpperCase());
         }
         ResultSet rs = insertStmt.executeQuery();
         if (rs.next()) {
@@ -191,12 +191,12 @@ public class MovieCollection implements Serializable {
         if (movie.getGenre() == null) {
           pstmt.setNull(6, Types.CHAR);
         } else {
-          pstmt.setString(6, movie.getGenre().toString());
+          pstmt.setString(6, movie.getGenre().toString().trim().toUpperCase());
         }
         if (movie.getMpaaRating() == null) {
           pstmt.setNull(7, Types.CHAR);
         } else {
-          pstmt.setString(7, movie.getMpaaRating().toString());
+          pstmt.setString(7, movie.getMpaaRating().toString().trim().toUpperCase());
         }
         pstmt.setLong(8, movie.getOperator().getId());
         pstmt.setInt(9, owner.getId());
@@ -246,12 +246,12 @@ public class MovieCollection implements Serializable {
         if (movie.getGenre() == null) {
           pstmt.setNull(6, Types.CHAR);
         } else {
-          pstmt.setString(6, movie.getGenre().toString());
+          pstmt.setString(6, movie.getGenre().toString().trim().toUpperCase());
         }
         if (movie.getMpaaRating() == null) {
           pstmt.setNull(7, Types.CHAR);
         } else {
-          pstmt.setString(7, movie.getMpaaRating().toString());
+          pstmt.setString(7, movie.getMpaaRating().toString().trim().toUpperCase());
         }
         pstmt.setLong(8, movie.getOperator().getId());
         pstmt.setInt(9, owner.getId());
