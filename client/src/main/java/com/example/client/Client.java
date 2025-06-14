@@ -19,6 +19,10 @@ public class Client {
   private static final int MAX_RETRIES = 3;
   private static final int SLEEP_MS = 1000;
   private static final int BUFFER_SIZE = 65535;
+  private static boolean EXIT_FLAG = false;
+
+  private static String currentLogin;
+  private static String currentPassword;
 
   public static void main(String[] args) {
     try (DatagramSocket socket = new DatagramSocket()) {
@@ -29,7 +33,33 @@ public class Client {
 
       logger.info("Клиент запущен");
 
-      while (true) {
+      // Запрос авторизации или регистрации
+      while (currentLogin == null && !EXIT_FLAG) {
+        System.out.println("Введите 'register' для регистрации или 'login' для входа:");
+        String authCommand = scanner.nextLine().trim().toLowerCase();
+        if (authCommand.equals("exit")) {
+          EXIT_FLAG = true;
+          break;
+        }
+        if (!authCommand.equals("register") && !authCommand.equals("login")) {
+          System.out.println("Неверная команда. Используйте 'register' или 'login'.");
+          continue;
+        }
+
+        System.out.print("Логин: ");
+        String login = scanner.nextLine().trim();
+        System.out.print("Пароль: ");
+        String password = scanner.nextLine().trim();
+
+        CommandData command = new CommandData(authCommand, null, login, password);
+        Response response = sendCommand(socket, address, port, command);
+        if (response != null && response.isStatus()) {
+          currentLogin = login;
+          currentPassword = password;
+        }
+      }
+
+      while (!EXIT_FLAG) {
         System.out.print("Введите команду: ");
         String input = scanner.nextLine();
         if (input.trim().equals("exit")) break;
@@ -37,7 +67,10 @@ public class Client {
         // Обрабатываем ввод пользователя
         List<CommandData> commands = processInput(input, scanner);
         for (CommandData command : commands) {
-          sendCommand(socket, address, port, command);
+          Response response = sendCommand(socket, address, port, command);
+          if (response == null) {
+            System.out.println("Не удалось получить ответ от сервера");
+          }
         }
       }
     } catch (Exception e) {
@@ -114,15 +147,20 @@ public class Client {
     String commandName = parts[0].toLowerCase();
 
     return switch (commandName) {
-      case "add" -> new CommandData("add", new ScanMovie(scanner, fromScript).getMovie());
+      case "add" ->
+          new CommandData(
+              "add", new ScanMovie(scanner, fromScript).getMovie(), currentLogin, currentPassword);
       case "update" ->
           new CommandData(
-              "update", new Object[] {new ScanMovie(scanner, fromScript).getMovie(), input});
-      default -> new CommandData(commandName, input);
+              "update",
+              new Object[] {new ScanMovie(scanner, fromScript).getMovie(), input},
+              currentLogin,
+              currentPassword);
+      default -> new CommandData(commandName, input, currentLogin, currentPassword);
     };
   }
 
-  private static void sendCommand(
+  private static Response sendCommand(
       DatagramSocket socket, InetAddress address, int port, CommandData command) {
     int attempts = 0;
     boolean success = false;
@@ -157,6 +195,7 @@ public class Client {
         System.out.println("Ответ сервера: " + response.getMessage());
 
         success = true;
+        return response;
       } catch (IOException e) {
         attempts++;
         logger.warn("Попытка {} не удалась: {}", attempts, e.getMessage());
@@ -174,5 +213,6 @@ public class Client {
         break;
       }
     }
+    return null;
   }
 }
