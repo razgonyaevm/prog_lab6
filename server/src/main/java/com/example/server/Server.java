@@ -167,6 +167,11 @@ public class Server {
             return false;
           }
         });
+
+    commandFactories.put(
+        "get_collection",
+        (collection, commandData, login, password) ->
+            new GetCollectionCommand(collection, login, password));
   }
 
   public void start() throws IOException {

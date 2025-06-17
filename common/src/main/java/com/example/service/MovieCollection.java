@@ -9,7 +9,6 @@ import com.example.service.model.Coordinates;
 import com.example.service.model.Movie;
 import com.example.service.model.Operator;
 import com.example.service.model.User;
-import io.github.cdimascio.dotenv.Dotenv;
 import java.io.Serializable;
 import java.sql.*;
 import java.time.LocalDate;
@@ -27,7 +26,6 @@ public class MovieCollection implements Serializable {
   private static final Logger logger = LogManager.getLogger(MovieCollection.class);
   private final LocalDateTime initializationDate = LocalDateTime.now();
 
-  private static final Dotenv dotenv = Dotenv.load();
   private final List<Movie> movies = new LinkedList<>();
   private final ReentrantLock lock = new ReentrantLock();
   private final DatabaseConfig dbConfig;
@@ -234,35 +232,36 @@ public class MovieCollection implements Serializable {
 
       String sql =
           "UPDATE movies "
-              + "SET name = ?, length = ?, first_coordinate = ?, second_coordinate = ?, "
+              + "SET id = ?, name = ?, length = ?, first_coordinate = ?, second_coordinate = ?, "
               + "oscars_count = ?, genre = ?, mpaa_rating = ?, operator_id = ?, owner_id = ?, created_at = ? "
               + "WHERE id = ? AND owner_id = ?";
       try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setString(1, movie.getName());
-        pstmt.setInt(2, movie.getLength());
-        pstmt.setDouble(3, movie.getCoordinates().getX());
-        pstmt.setLong(4, movie.getCoordinates().getY());
-        pstmt.setInt(5, movie.getOscarsCount());
+        pstmt.setLong(1, id);
+        pstmt.setString(2, movie.getName());
+        pstmt.setInt(3, movie.getLength());
+        pstmt.setDouble(4, movie.getCoordinates().getX());
+        pstmt.setLong(5, movie.getCoordinates().getY());
+        pstmt.setInt(6, movie.getOscarsCount());
         if (movie.getGenre() == null) {
-          pstmt.setNull(6, Types.CHAR);
-        } else {
-          pstmt.setString(6, movie.getGenre().toString().trim().toUpperCase());
-        }
-        if (movie.getMpaaRating() == null) {
           pstmt.setNull(7, Types.CHAR);
         } else {
-          pstmt.setString(7, movie.getMpaaRating().toString().trim().toUpperCase());
+          pstmt.setString(7, movie.getGenre().toString().trim().toUpperCase());
         }
-        pstmt.setLong(8, movie.getOperator().getId());
-        pstmt.setInt(9, owner.getId());
-        pstmt.setTimestamp(10, Timestamp.valueOf(movie.getCreationDate().atStartOfDay()));
-        pstmt.setLong(11, id);
-        pstmt.setInt(12, owner.getId());
+        if (movie.getMpaaRating() == null) {
+          pstmt.setNull(8, Types.CHAR);
+        } else {
+          pstmt.setString(8, movie.getMpaaRating().toString().trim().toUpperCase());
+        }
+        pstmt.setLong(9, movie.getOperator().getId());
+        pstmt.setInt(10, owner.getId());
+        pstmt.setTimestamp(11, Timestamp.valueOf(movie.getCreationDate().atStartOfDay()));
+        pstmt.setLong(12, id);
+        pstmt.setInt(13, owner.getId());
         int rows = pstmt.executeUpdate();
         if (rows > 0) {
-          removeById(id, owner);
           movie.setId(id);
           movie.setOwner(owner);
+          movies.removeIf(m -> m.getId() == id);
           movies.add(movie);
           conn.commit();
           logger.info("Фильм с id {} обновлен в БД и в коллекции", id);
