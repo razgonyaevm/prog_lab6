@@ -267,7 +267,7 @@ public class VisualizationPanel extends JPanel {
         Movie updatedMovie = editDialog.getMovie();
         client.sendCommand("update", new Object[] {updatedMovie, "update " + movie.getId()});
         // обновление визуализации
-        List<Movie> updatedMovies = client.getCollectionResponse().getCollection().getMovies();
+        List<Movie> updatedMovies = client.getCollectionResponse().getCollection().movies();
         setMovies(updatedMovies);
         mainFrame.refreshTable();
         JOptionPane.showMessageDialog(

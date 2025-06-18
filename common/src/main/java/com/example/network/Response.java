@@ -1,6 +1,6 @@
 package com.example.network;
 
-import com.example.service.MovieCollection;
+import com.example.service.model.MovieCollectionDTO;
 import java.io.Serializable;
 import lombok.Getter;
 
@@ -15,7 +15,7 @@ public class Response implements Serializable {
   private final String message;
   private final boolean status;
   private final long timestamp;
-  private final MovieCollection collection;
+  private final MovieCollectionDTO collection;
 
   public Response(String message, boolean status) {
     this.message = message;
@@ -24,7 +24,7 @@ public class Response implements Serializable {
     this.collection = null;
   }
 
-  public Response(String message, boolean status, MovieCollection collection) {
+  public Response(String message, boolean status, MovieCollectionDTO collection) {
     this.message = message;
     this.status = status;
     this.timestamp = System.currentTimeMillis();

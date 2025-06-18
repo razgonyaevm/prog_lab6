@@ -314,7 +314,7 @@ public class MainFrame extends JFrame {
             Response response = client.getCollectionResponse();
             List<Movie> movies = new ArrayList<>();
             if (response != null && response.getCollection() != null) {
-              movies = response.getCollection().getMovies();
+              movies = response.getCollection().movies();
               if (movies == null) {
                 movies = new ArrayList<>();
                 logger.warn("Список фильмов в коллекции null");

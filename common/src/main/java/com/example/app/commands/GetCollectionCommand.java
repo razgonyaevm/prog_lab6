@@ -4,6 +4,7 @@ import com.example.app.Command;
 import com.example.network.Response;
 import com.example.service.MovieCollection;
 import com.example.service.UserManager;
+import com.example.service.model.MovieCollectionDTO;
 import com.example.service.model.User;
 
 public class GetCollectionCommand implements Command {
@@ -23,6 +24,7 @@ public class GetCollectionCommand implements Command {
     if (user == null) {
       return new Response("Неавторизованный доступ", false);
     }
-    return new Response("Коллекция", true, collection);
+    MovieCollectionDTO collectionDTO = new MovieCollectionDTO(collection.getMovies());
+    return new Response("Коллекция", true, collectionDTO);
   }
 }
