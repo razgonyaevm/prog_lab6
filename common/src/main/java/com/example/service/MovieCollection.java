@@ -9,7 +9,6 @@ import com.example.service.model.Coordinates;
 import com.example.service.model.Movie;
 import com.example.service.model.Operator;
 import com.example.service.model.User;
-import java.io.Serializable;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 /** Класс для управления коллекцией с элементами {@link Movie} */
 @Getter
-public class MovieCollection implements Serializable {
+public class MovieCollection {
   private static final Logger logger = LogManager.getLogger(MovieCollection.class);
   private final LocalDateTime initializationDate = LocalDateTime.now();
 

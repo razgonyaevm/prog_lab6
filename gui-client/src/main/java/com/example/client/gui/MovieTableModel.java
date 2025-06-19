@@ -8,22 +8,29 @@ import lombok.Getter;
 
 public class MovieTableModel extends AbstractTableModel {
   @Getter private List<Movie> movies;
-  private final String[] columnNames = {
-    LocalizationManager.getString("table.column.id"),
-    LocalizationManager.getString("table.column.name"),
-    LocalizationManager.getString("table.column.length"),
-    LocalizationManager.getString("table.column.coordinates.x"),
-    LocalizationManager.getString("table.column.coordinates.y"),
-    LocalizationManager.getString("table.column.oscars"),
-    LocalizationManager.getString("table.column.genre"),
-    LocalizationManager.getString("table.column.mpaa"),
-    LocalizationManager.getString("table.column.operator"),
-    LocalizationManager.getString("table.column.owner"),
-    LocalizationManager.getString("table.column.created")
-  };
+  private String[] columnNames;
+
+  public void updateColumnNames() {
+    columnNames =
+        new String[] {
+          LocalizationManager.getString("table.column.id"),
+          LocalizationManager.getString("table.column.name"),
+          LocalizationManager.getString("table.column.length"),
+          LocalizationManager.getString("table.column.coordinates.x"),
+          LocalizationManager.getString("table.column.coordinates.y"),
+          LocalizationManager.getString("table.column.oscars"),
+          LocalizationManager.getString("table.column.genre"),
+          LocalizationManager.getString("table.column.mpaa"),
+          LocalizationManager.getString("table.column.operator"),
+          LocalizationManager.getString("table.column.owner"),
+          LocalizationManager.getString("table.column.created")
+        };
+    fireTableStructureChanged();
+  }
 
   public MovieTableModel(List<Movie> movies) {
     this.movies = new LinkedList<>(movies);
+    updateColumnNames();
   }
 
   public void setMovies(List<Movie> movies) {

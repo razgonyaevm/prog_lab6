@@ -22,6 +22,7 @@ import org.commonmark.renderer.html.HtmlRenderer;
 
 public class MainFrame extends JFrame {
   private static final Logger logger = LogManager.getLogger(MainFrame.class);
+  private static final int REFRESH_INTERVAL_MS = 5000;
   private final Client client;
   private MovieTableModel tableModel;
   private JTable movieTable;
@@ -31,6 +32,7 @@ public class MainFrame extends JFrame {
   private JMenu languageMenu;
   private JMenu commandsMenu;
   private JToolBar toolBar;
+  private Timer refreshTimer;
 
   public MainFrame(Client client) {
     super();
@@ -55,6 +57,7 @@ public class MainFrame extends JFrame {
       }
     }
     initComponents();
+    initRefreshTimer();
     updateLocale();
     refreshTable();
     logger.info("MainFrame инициализирован для пользователя {}", client.getCurrentLogin());
@@ -214,6 +217,30 @@ public class MainFrame extends JFrame {
     logger.debug("Компоненты MainFrame инициализированы");
   }
 
+  private void initRefreshTimer() {
+    refreshTimer =
+        new Timer(
+            REFRESH_INTERVAL_MS,
+            e -> {
+              try {
+                refreshTable();
+                logger.debug("Автоматическое обновление выполнено");
+              } catch (Exception ex) {
+                logger.error("Ошибка при автоматическом обновлении: {}", ex.getMessage(), ex);
+              }
+            });
+    refreshTimer.start();
+  }
+
+  @Override
+  public void dispose() {
+    logger.debug("Остановка таймера автообновления");
+    if (refreshTimer != null) {
+      refreshTimer.stop();
+    }
+    super.dispose();
+  }
+
   private String[] getAvailableLanguages() {
     Map<String, Locale> supportedLocales = LocalizationManager.getSUPPORTED_LOCALES();
     if (supportedLocales.isEmpty()) {
@@ -230,6 +257,7 @@ public class MainFrame extends JFrame {
     setTitle(LocalizationManager.getString("app.title"));
     if (tableModel != null) {
       tableModel.fireTableStructureChanged();
+      tableModel.updateColumnNames();
     } else {
       logger.warn("tableModel не инициализирован");
     }
