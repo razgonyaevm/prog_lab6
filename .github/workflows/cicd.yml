@@ -22,15 +22,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # Проверка стиля с помощью fmt-maven-plugin
+      # Проверка стиля для всех модулей
       - name: Run style check
-        run: mvn -B fmt:check
-        working-directory: server
+        run: mvn validate
 
       # Сборка JAR
       - name: Build JAR
         run: mvn -B package -DskipTests
-        working-directory: server
 
       # Получение хэша коммита и даты
       - name: Get commit hash and date
@@ -42,7 +40,7 @@ jobs:
       # Переименование JAR
       - name: Rename JAR
         run: |
-          mv server/target/server-1.0-SNAPSHOT.jar server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
+          mv server/target/server.jar server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
 
       # Выгрузка JAR на helios
       - name: Deploy JAR to Helios
