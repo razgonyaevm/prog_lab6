@@ -51,6 +51,6 @@ jobs:
             key: ${{ secrets.HELIOS_SSH_KEY }}
             port: 2222
             source: server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
-            target: /home/s467211/jars/
+            target: /home/studs/s467211/jars/
             debug: true
 
