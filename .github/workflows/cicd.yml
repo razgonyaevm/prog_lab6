@@ -44,13 +44,17 @@ jobs:
 
       # Выгрузка JAR на helios
       - name: Deploy JAR to Helios
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: se.ifmo.ru
-          username: s467211
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
           password: ${{ secrets.HELIOS_SSH_PASSWORD }}
-          port: 2222
-          source: server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
-          target: home/studs/s467211/jars/
-          debug: true
+          port: ${{ secrets.PORT }}
+          script: |
+            mkdir -p ~/jars
+            - name: Copy JAR to Helios
+              run: |
+                scp -P ${{ secrets.PORT }} server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar ${{ secrets.USERNAME }}@se.ifmo.ru:~/jars/
+        env:
+          SCP_PASSWORD: ${{ secrets.HELIOS_SSH_PASSWORD }}
 
