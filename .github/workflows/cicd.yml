@@ -1,0 +1,57 @@
+name: CI/CD for Server
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Чек-аут репозитория
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Настройка JDK
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Проверка стиля с помощью fmt-maven-plugin
+      - name: Run style check
+        run: mvn -B fmt:check
+        working-directory: server
+
+      # Сборка JAR
+      - name: Build JAR
+        run: mvn -B package -DskipTests
+        working-directory: server
+
+      # Получение хэша коммита и даты
+      - name: Get commit hash and date
+        id: vars
+        run: |
+          echo "commit_hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "build_date=$(date +%Y%m%d_%H%M%S)" >> $GITHUB_OUTPUT
+
+      # Переименование JAR
+      - name: Rename JAR
+        run: |
+          mv server/target/server-1.0-SNAPSHOT.jar server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
+
+      # Выгрузка JAR на helios
+      - name: Deploy JAR to Helios
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: se.ifmo.ru
+          username: s467211
+          password: ${{ secrets.HELIOS_SSH_PASSWORD }}
+          port: 2222
+          source: server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
+          target: ~/jars/
+
