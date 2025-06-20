@@ -15,10 +15,6 @@
     <dependencies>
         <dependency>
             <groupId>com.example</groupId>
-            <artifactId>client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.example</groupId>
             <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -38,6 +34,11 @@
                 <groupId>com.atlassian.commonmark</groupId>
                 <artifactId>commonmark</artifactId>
                 <version>0.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>client</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
