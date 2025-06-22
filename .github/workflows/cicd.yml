@@ -52,5 +52,6 @@ jobs:
             port: 2222
             source: server/target/${{ steps.vars.outputs.commit_hash }}_${{ steps.vars.outputs.build_date }}.jar
             target: /home/studs/s467211/jars/
+            strip_components: 2
             debug: true
 
